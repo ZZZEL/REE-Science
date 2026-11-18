@@ -1,6 +1,85 @@
 /* =============================================================================
- * 稀土材料科学平台 · 静态 Demo · 全站交互（v3.60）
+ * 稀土材料科学平台 · 静态 Demo · 全站交互（v3.77）
  * -----------------------------------------------------------------------------
+ * v3.77（黄总 2026-11-18 午）：配方 / 工艺候选卡加「选用」按钮——每张候选可显式选定
+ *   （candSelId：UI.candSel 显式选用 > AI 推荐项 pick 兜底），选中卡主色描边
+ *   （.cand-item.is-picked）+ 按钮实底「已选用」并禁用，改选点其他卡按钮；
+ *   cand-pick 动作 toast 反馈（配方=后续仿真/工艺基于该候选，工艺=执行排产基于该工艺包）；
+ *   newChat 复位 UI.candSel。版本号全站统一 v3.77。
+ * -----------------------------------------------------------------------------
+ * v3.76（黄总 2026-11-18 午）：候选已存在科研对象时不再渲染置灰的「已在科研对象」按钮——
+ *   不可点的占位按钮是噪音；此时确认卡只剩 忽略 / 存到当前样品（与工艺卡按钮组形态一致）。
+ *   版本号全站统一 v3.76。
+ *
+ * v3.75（黄总 2026-11-18 午）：确认卡摘要行撤「推荐 / 预测 predicted」标签——推荐倾向与
+ *   口径对话区 AI 已表述，卡片只留 id + 关键数字；工艺评分挪到名称后（.cc-score），
+ *   meta 行只余热处理窗口。版本号全站统一 v3.75。
+ *
+ * v3.74（黄总 2026-11-18 午）：演示回答改逐字流式——空点发送的预置演示不再整片糊上：
+ *   advanceDemo 先整体发出用户消息（立现），本轮 plan 过程卡保持完成态直显，answer 注入为
+ *   未流式（_streamed=false）后由 playStreamQueue 串行逐字播放；startStream 加可选 onDone 回调
+ *   支撑多条 answer 排队播放（一轮可含综合解读 + 各仿真补充）。版本号全站统一 v3.74。
+ *
+ * v3.73（黄总 2026-11-18 午）：配方控件改圆形胶囊（pill：白底描边全圆角、垂直居中于
+ *   tab 条，更有控件感）——撤 flask icon；下拉菜单与胶囊齐宽（fs-toggle 定位时
+ *   width = 胶囊宽，菜单项去「N 类」后缀保配方名完整不截断）。
+ *   版本号全站统一 v3.73。
+ * -----------------------------------------------------------------------------
+ * v3.72（黄总 2026-11-18 午）：确认卡翻页器移卡片右上角（绝对定位浮于摘要区右上，
+ *   摘要区右留 84px 防重叠）；底行只剩 标题（类型待确认）+ 按钮组。版本号全站统一 v3.72。
+ *
+ * v3.71（黄总 2026-11-18 午）：配方控件展开形态修正——不再在 tab 条下方追加第二行
+ *   （.wp-fs-bar/.wp-fs-chip 删），改为控件自身的下拉菜单（.wp-fs-menu，fixed 浮层，
+ *   fs-toggle 后 JS 按按钮位置定位到正下方，避开 wp-tabs overflow-x 裁剪）；
+ *   切 tab 自动收起。控件与右侧配方 tab 之间去分隔线，配方 tab 激活时控件同步主色
+ *   （.wp-fs.is-formula）——营造一体感。版本号全站统一 v3.71。
+ * -----------------------------------------------------------------------------
+ * v3.70（黄总 2026-11-18 午）：侧边文件树撤下（v3.62~v3.66 的 .wp-tree/.wt-* 整组删除），
+ *   改为标签栏里的配方切换控件——放在所有产物 tab 之前（检索结果不算，分割线之后）：
+ *   控件显示当前配方（UI.fsSel，缺省最新一组），点击在 tab 条下方展开配方列表
+ *   （.wp-fs-bar chips，含每组产物类型数），选中后产物 tab 只显示该配方组下的产物
+ *   （leaf 升级为 tns 数组过滤，产物按配方隔离、不混组）。归组规则与 v3.64 一致。
+ *   拖拽下限回 360px。版本号全站统一 v3.70。
+ * -----------------------------------------------------------------------------
+ * v3.69（黄总 2026-11-18 午）：确认卡标题下置——「候选配方/工艺参数包 待确认」并入底部
+ *   控件行，取代「确认这组…的去向」引导语；翻页器随标题挪到底行（跟在标题后）；
+ *   卡片顶部直接展示候选摘要，不再设卡头行（.cc-head/.cc-title 样式随删）。
+ *   版本号全站统一 v3.69。
+ *
+ * v3.68（黄总 2026-11-18 午）：工作台 tab 条加分组竖线——「检索结果」（会话级）与右侧
+ *   产物 tab（配方/工艺/VASP/mumax3，入文件树的那组）之间插 1px 竖分割线（.wp-sep，
+ *   第二个 tab 前渲染，空会话仅检索 tab 时不出现）。版本号全站统一 v3.68。
+ * v3.67（黄总 2026-11-18 午）：工艺确认卡撤「创建为新对象」——全平台以配方为主 key 组织，
+ *   工艺包是配方的下游产物、不能独立成科研对象（同 v3.20 方案档收敛、v3.64 产物树归组原则）；
+ *   工艺去向只剩 忽略 / 存到当前样品；配方候选是主 key 对象，保留创建入口；
+ *   cc-create 事件侧加防御（非配方直接不响应）。版本号全站统一 v3.67。
+ *
+ * v3.66（黄总 2026-11-18）：产物文件树列移到工作台最右侧——tab 内容区在左、树列贴右边，
+ *   分隔线 border-right → border-left。版本号全站统一 v3.66。
+ * v3.65（黄总 2026-11-18）：产物文件树同配方下同类型 tab 叶去重——addLeaf 对已存在的同组同 tab 叶
+ *   只更新 tn（指向最新一次运行）不再追加 #2/#3 分叶；多次运行的历史在该 tab 卡内切换，不在树里铺。
+ *   一个配方下只有 配方/工艺/VASP/mumax3 各一个叶。版本号全站统一 v3.65。
+ *
+ * v3.64（黄总 2026-11-18）：工作台产物文件树——左列 160px 以配方为 key 组织会话产物。
+ *   归组规则：最近一次配方上下文（配方 ID 即存储 keyid）→ 工艺/仿真挂其下；
+ *   无配方回落样品基线版本，再无则「未挂配方」；检索为会话级不入树。
+ *   叶子点击切对应类型 tab 并滚动定位具体产物卡（闪框 1.5s）；组可折叠（UI.treeOpen）；
+ *   固化会话 plan/answer 共享 task 引用按引用去重；演示轮（advanceDemo）显式 seed 确认卡。
+ *   拖拽下限 360→470（树列占 160）。同类型多叶收敛见 v3.63 条。全站版本 v3.64。
+ * -----------------------------------------------------------------------------
+ * v3.63（黄总 2026-11-18）：AI 常规回答去气泡化——.ans-bubble 撤背景/边框/圆角/阴影/padding，
+ *   对话流里 AI 的文字回答平铺为纯文本流，与用户气泡（右对齐有色）和 plan 过程卡（仍带卡片壳）
+ *   形成层级区分；内嵌可视化（cmp-block / grain-bar）自带边框背景，不受影响。版本号 v3.63。
+ *
+ * v3.62（黄总 2026-11-18）：工艺确认卡摘要收敛——11 项参数整串平铺（3 行长串）违背
+ *   「快速浏览必要信息 + 确定性选择」定位，收成热处理窗口一行（评分 · 烧结 温度×时间 ·
+ *   退火 温度×时间），与对话流 answer 口径一致；完整 11 项在工作台工艺 tab。版本号 v3.62。
+ *
+ * v3.61（黄总 2026-11-18）：确认卡撤解读 note——定位是「快速浏览必要信息 + 确定性选择」，
+ *   解读类文字（形成焓最优/取向最优…）不上卡，由对话区 AI 承载；配方/工艺两分支同撤，
+ *   .cc-note 样式随删。mock note 字段保留：cc-create 创建科研对象时写入 design_note。
+ *   版本号全站统一 v3.61。
+ *
  * v3.60（黄总 2026-11-18）：对话页输入条 .composer 去半透明底色/模糊/顶部分隔线——
  *   透明直落页面底色（v3.59 已删 savebar，save 区域由确认卡独占，无需再动）；
  *   全站版本号统一升 v3.60——前轮改动未升 ?v= 参数，浏览器按同 URL 命中缓存旧样式。
@@ -676,6 +755,8 @@
     UI._draft = '';
     UI.demoStep = 0;   /* v3.38：新对话从演示第 0 步起（空点发送逐轮吐脚本） */
     UI.confirmCard = null;  /* v3.52：新对话无产物，确认卡清空 */
+    UI.fsOpen = false; UI.fsSel = '';  /* v3.70：配方切换控件复位（组按会话重建，默认最新一组） */
+    UI.candSel = null;  /* v3.74：候选选用复位（回落 AI 推荐项） */
     /* v3.58：新对话清空挂载上下文（块即上下文，空态无块则状态不残留）；
      * 同时清空输入框 DOM——否则 initIndex 会把旧块当草稿恢复回来 */
     UI.sampleSel = ''; UI.skillSel = ''; UI.mountTool = ''; UI.mountScp = '';
@@ -749,7 +830,7 @@
       + '<span class="sb-avatar" aria-hidden="true">' + esc(M.account.initial) + '</span>'
       + '<span class="sb-acc-name">' + esc(M.account.name) + '</span>'
       + '</div>'
-      + '<div class="sb-ver">静态演示 Demo v3.60</div>'
+      + '<div class="sb-ver">静态演示 Demo v3.77</div>'
       + '</div></aside>';
     var chrome = $('app-chrome');
     if (chrome) { chrome.innerHTML = html; }
@@ -1324,11 +1405,21 @@
   /* 候选配方卡（v3.12）：卡头 id + 推荐 + 口径 chip + 成本（取代评分）；
    * 堆叠条 Fe 余量用实色撑满 100%；性能指标三等分 + 竖线分隔、两行高（中文+英文 / 数字+单位）；
    * 解读 note 不上卡（对话流已承载） */
+  /* v3.74（黄总 2026-11-18）：候选卡加「选用」按钮——默认选中 AI 推荐项（pick），
+   * 用户点其他卡按钮改选（UI.candSel 显式覆盖）；选中卡主色描边 + 按钮「已选用」。 */
+  function candSelId(kind) {
+    var pick = (kind === 'formula' ? M.candidates : M.processPacks).filter(function (x) { return x.pick; })[0];
+    return (UI.candSel && UI.candSel[kind]) || (pick && pick.id) || '';
+  }
   function candCardHTML(c) {
-    return '<div class="cand-item' + (c.pick ? ' is-pick' : '') + '">'
+    var on = c.id === candSelId('formula');
+    return '<div class="cand-item' + (c.pick ? ' is-pick' : '') + (on ? ' is-picked' : '') + '">'
       + '<div class="cand-top"><span class="cand-id mono">' + esc(c.id) + '</span>'
       + (c.pick ? tag('pass', '推荐') : '') + truthFlagHTML('predicted')
-      + '<span class="cand-score">成本 <b class="mono">' + esc(c.cost) + '</b></span></div>'
+      + '<span class="cand-score">成本 <b class="mono">' + esc(c.cost) + '</b></span>'
+      + '<button type="button" class="cand-pick-btn' + (on ? ' on' : '') + '" data-action="cand-pick"'
+      + ' data-kind="formula" data-id="' + esc(c.id) + '"' + (on ? ' disabled' : '') + '>'
+      + (on ? '已选用' : '选用') + '</button></div>'
       + compBarHTML(c.comps)
       + '<div class="cand-perf">'
       + [['矫顽力', 'Hcj', c.pred.Hcj, 'kOe'], ['剩磁', 'Br', c.pred.Br, 'kGs'], ['磁能积', '(BH)max', c.pred.BHmax, 'MGOe']]
@@ -1357,10 +1448,13 @@
       i += g[1];
       return '<div class="pack-group"><div class="pack-gt">' + esc(g[0]) + '</div>' + rows + '</div>';
     }).join('');
-    return '<div class="cand-item' + (p.pick ? ' is-pick' : '') + '">'
+    return '<div class="cand-item' + (p.pick ? ' is-pick' : '') + (p.id === candSelId('process') ? ' is-picked' : '') + '">'
       + '<div class="cand-top"><span class="cand-id mono">' + esc(p.id) + '</span>'
       + (p.pick ? tag('pass', '推荐') : '') + truthFlagHTML('predicted')
-      + '<span class="cand-score">评分 <b class="mono">' + p.score + '</b></span></div>'
+      + '<span class="cand-score">评分 <b class="mono">' + p.score + '</b></span>'
+      + '<button type="button" class="cand-pick-btn' + (p.id === candSelId('process') ? ' on' : '') + '" data-action="cand-pick"'
+      + ' data-kind="process" data-id="' + esc(p.id) + '"' + (p.id === candSelId('process') ? ' disabled' : '') + '>'
+      + (p.id === candSelId('process') ? '已选用' : '选用') + '</button></div>'
       + groups + '</div>';
   }
 
@@ -1370,9 +1464,36 @@
     /* v3.34：仿真只认 VASP（T-02）+ mumax3（T-09）两路真实计算产物；
      * 多工具编排卡（keepTaskPlan）按实际 tools 分桶，不再只看消息主 intent。 */
     var tool2sim = { 'T-02': 'sim_vasp', 'T-09': 'sim_mumax' };
-    UI.msgs.forEach(function (m) {
+    /* v3.62（黄总 2026-11-18）：产物文件树——同一会话可能围绕多个配方聊出多轮
+     * 仿真 / 工艺，顶部类型 tab（都叫 VASP）分不清挂在哪个配方下。
+     * 树以「最近一次配方上下文」为 key（配方 ID 即未来存储的 keyid）归组产物；
+     * 无配方时回落样品基线版本，再无则归「未挂配方」。检索结果为会话级，不入树。 */
+    var treeGroups = [], curCtx = null, treeSeen = [];
+    function ctxFor(t) {
+      if (curCtx) { return curCtx; }
+      var sid = (t.slots && t.slots.sample_id) || '';
+      var s = sid ? findSample(sid) : null;
+      if (s && s.formula && s.formula.version) {
+        curCtx = { key: sid, label: s.formula.version, title: sid + ' · ' + s.formula.version + '（在用基线）', leaves: [] };
+      } else {
+        curCtx = { key: '_loose', label: '未挂配方', title: '会话尚未产出配方，产物暂归此处', leaves: [] };
+      }
+      treeGroups.push(curCtx);
+      return curCtx;
+    }
+    function addLeaf(g, tab, label, tn, title) {
+      /* v3.65：一个配方下同类型产物只有一个叶，tn 保持指向最新一次运行。
+       * v3.70（黄总 2026-11-18）：文件树撤下、改为标签栏配方切换控件——归组逻辑保留，
+       * 叶升级为「组内该类型产物集合」：tns 按序累积（tab 内容过滤用），tn 指最新。 */
+      var ex = null;
+      for (var i = 0; i < g.leaves.length; i++) { if (g.leaves[i].tab === tab) { ex = g.leaves[i]; break; } }
+      if (ex) { if (tn) { ex.tn = tn; if (ex.tns.indexOf(tn) < 0) { ex.tns.push(tn); } } return; }
+      g.leaves.push({ tab: tab, label: label, n: 0, tn: tn || '', tns: tn ? [tn] : [], title: title || '' });
+    }
+    UI.msgs.forEach(function (m, i) {
       if (!m.task) { return; }
       var t = m.task;
+      t._tn = 'tn' + i;
       if ((m.kind === 'plan' || m.kind === 'task') && m.task) { lastPlan = m; }
       if (m.kind === 'result' || m.kind === 'answer') { lastResult = m; }
       if (t.intent === 'formula_gen') { hasFormula = true; }
@@ -1386,7 +1507,35 @@
       buckets.forEach(function (b) {
         if (!simTasks[b].some(function (x) { return x === t; })) { simTasks[b].push(t); }
       });
+      /* 文件树归组：配方产出开新组，其余产物挂最近组。
+       * 固化会话的 plan 卡与 answer 卡共享同一 task 对象引用——按引用去重，
+       * 同一任务只归组一次，避免「候选配方」叶成对出现。 */
+      if (treeSeen.indexOf(t) >= 0) { return; }
+      treeSeen.push(t);
+      var pick = M.candidates.filter(function (c) { return c.pick; })[0] || M.candidates[0];
+      if (t.intent === 'formula_gen') {
+        curCtx = treeGroups.filter(function (g) { return g.key === pick.id; })[0];
+        if (!curCtx) { curCtx = { key: pick.id, label: pick.id, title: pick.id + ' · 会话产出的候选配方组', leaves: [] }; treeGroups.push(curCtx); }
+        addLeaf(curCtx, 'formula', '候选配方', '', '候选配方卡组 ×' + M.candidates.length);
+      } else if (t.intent === 'process_opt') {
+        addLeaf(ctxFor(t), 'process', '工艺参数包', '', t.raw || t.name);
+      } else {
+        buckets.forEach(function (b) {
+          addLeaf(ctxFor(t), b, b === 'sim_vasp' ? 'VASP' : 'mumax3', t._tn, t.raw || t.name);
+        });
+      }
     });
+    treeGroups = treeGroups.filter(function (g) { return g.leaves.length > 0; });
+    /* v3.70：配方切换控件——UI.fsSel 选中组 key，无效时默认最新一组；
+     * 产物 tab（配方/工艺/VASP/mumax3）只显示选中组下的产物，检索结果不受影响。 */
+    var selGroup = null;
+    if (treeGroups.length) {
+      selGroup = treeGroups.filter(function (g) { return g.key === UI.fsSel; })[0] || treeGroups[treeGroups.length - 1];
+      UI.fsSel = selGroup.key;
+    }
+    function selLeaf(tab) {
+      return selGroup ? selGroup.leaves.filter(function (l) { return l.tab === tab; })[0] : null;
+    }
     var refTask = lastResult ? lastResult.task : (lastPlan ? lastPlan.task : null);
 
     function secSearch() {
@@ -1396,12 +1545,13 @@
     /* v3.58（黄总 2026-11-17 晚）：配方 tab 只留候选卡组，撤下「与当前版本对比」
      * （panelFormulaHTML 不再上工作台，函数保留备查）；工艺 tab 只留三组工艺卡，
      * 撤下温度-时间阶梯曲线（procChartSVG 仍服务对话流确认卡）。 */
+    /* v3.70：产物内容按选中配方过滤——组内无该类型时给空态，绝不拿别的配方的产物冒充 */
     function secFormula() {
-      if (!hasFormula) { return '<div class="wp-empty">会话中产出候选配方组后，在此呈现。</div>'; }
+      if (!selLeaf('formula')) { return '<div class="wp-empty">' + esc(selGroup ? selGroup.label + ' 下暂无候选配方卡组。' : '会话中产出候选配方组后，在此呈现。') + '</div>'; }
       return M.candidates.map(candCardHTML).join('');
     }
     function secProcess() {
-      if (!hasProcess) { return '<div class="wp-empty">会话中产出工艺包组后，在此呈现。</div>'; }
+      if (!selLeaf('process')) { return '<div class="wp-empty">' + esc(selGroup ? selGroup.label + ' 下暂无工艺参数包。' : '会话中产出工艺包组后，在此呈现。') + '</div>'; }
       return M.processPacks.map(packCardHTML).join('');
     }
     /* 仿真产物卡（上下布局：结论 + 输入参数 → 运行脚本专区）：
@@ -1452,7 +1602,7 @@
           + '</div>';
       }
       var wpTime = run.job ? '<span class="sim-time" title="' + esc(run.job.ts) + '">' + esc(run.job.ts.slice(5)) + '</span>' : '';
-      return '<section class="card wp-sim"><div class="card-h"><h2>' + icon('flask', 14) + ' ' + esc(t.name) + '</h2>'
+      return '<section class="card wp-sim"' + (t._tn ? ' data-tn="' + t._tn + '"' : '') + '><div class="card-h"><h2>' + icon('flask', 14) + ' ' + esc(t.name) + '</h2>'
         + tag('muted', '挂 ' + (sampleId || '—')) + wpTime
         + (canArchive ? '<button type="button" class="ssp-btn sim-archive-btn" data-action="sim-archive" data-key="' + archKey + '">归档到样品</button>' : '')
         + '</div>'
@@ -1463,21 +1613,24 @@
         + '</div></section>';
     }
     function secSimRun(intent, emptyNote) {
-      var list = simTasks[intent];
-      if (!list.length) { return '<div class="wp-empty">' + emptyNote + '</div>'; }
+      /* v3.70：只渲染选中配方组内的仿真运行（leaf.tns 按序累积） */
+      var leaf = selLeaf(intent);
+      if (!selGroup || !leaf || !leaf.tns.length) { return '<div class="wp-empty">' + emptyNote + '</div>'; }
       var map = { sim_vasp: 'VASP', sim_mumax: 'mumax3' };
       var run = M.simRuns[map[intent]];
-      return list.map(function (t) { return wpSimRunHTML(run, t, map[intent]); }).join('');
+      return simTasks[intent].filter(function (t) { return leaf.tns.indexOf(t._tn) >= 0; })
+        .map(function (t) { return wpSimRunHTML(run, t, map[intent]); }).join('');
     }
 
     /* v3.26（黄总 2026-11-16）：tab 加宽、不可关闭、不可拖拽——
-     * 仅保留「宽度自适应 + 存在才出现」，顺序固定按 ALL 定义。 */
+     * 仅保留「宽度自适应 + 存在才出现」，顺序固定按 ALL 定义。
+     * v3.70：产物 tab 的 show 改按选中配方组判定（检索结果恒显，不受切换影响）。 */
     var ALL = [
       { id: 'search', label: '检索结果', body: secSearch, show: true },
-      { id: 'formula', label: '配方', body: secFormula, show: hasFormula },
-      { id: 'process', label: '工艺', body: secProcess, show: hasProcess },
-      { id: 'sim_vasp', label: 'VASP', body: function () { return secSimRun('sim_vasp', '会话中完成 VASP 第一性原理计算后，在此呈现。'); }, show: simTasks.sim_vasp.length },
-      { id: 'sim_mumax', label: 'mumax3', body: function () { return secSimRun('sim_mumax', '会话中完成 mumax3 微磁学仿真后，在此呈现。'); }, show: simTasks.sim_mumax.length }
+      { id: 'formula', label: '配方', body: secFormula, show: !!(selGroup && selLeaf('formula')) },
+      { id: 'process', label: '工艺', body: secProcess, show: !!(selGroup && selLeaf('process')) },
+      { id: 'sim_vasp', label: 'VASP', body: function () { return secSimRun('sim_vasp', '会话中完成 VASP 第一性原理计算后，在此呈现。'); }, show: !!(selGroup && selLeaf('sim_vasp')) },
+      { id: 'sim_mumax', label: 'mumax3', body: function () { return secSimRun('sim_mumax', '会话中完成 mumax3 微磁学仿真后，在此呈现。'); }, show: !!(selGroup && selLeaf('sim_mumax')) }
     ];
     var tabs = ALL.filter(function (t) { return t.show; });
     if (!tabs.length) { tabs = [ALL[0]]; }
@@ -1485,10 +1638,41 @@
     if (!tabs.some(function (t) { return t.id === active; })) { active = tabs[0].id; }
     var activeBody = tabs.filter(function (t) { return t.id === active; })[0].body();
 
+    /* v3.70（黄总 2026-11-18）：配方切换控件（撤侧边文件树）——标签栏里、所有产物 tab
+     * 之前（检索结果不算）；显示当前配方，点击在 tab 条下方展开会话内的配方列表；
+     * 选中后产物 tab 只显示该配方下的产物。无配方归组时控件不出现。 */
+    function fsHTML() {
+      if (!selGroup) { return ''; }
+      /* v3.71（黄总 2026-11-18）：展开改为控件自身的下拉菜单（.wp-fs-menu，fixed 浮层
+       * 由 fs-toggle 点击后 JS 定位到按钮正下方——wp-tabs overflow-x 会裁 absolute 子元素，
+       * fixed 不受裁剪）；不再在 tab 条下方追加第二行。 */
+      var menu = UI.fsOpen
+        ? '<div class="wp-fs-menu" role="listbox" aria-label="配方列表">'
+          + treeGroups.map(function (g) {
+              return '<button type="button" role="option" aria-selected="' + (g.key === selGroup.key) + '"'
+                + ' class="wp-fs-item' + (g.key === selGroup.key ? ' on' : '') + '"'
+                + ' data-action="fs-pick" data-key="' + esc(g.key) + '" title="' + esc(g.title) + '">'
+                + '<span class="wp-fs-it">' + esc(g.label) + '</span>'
+                + '</button>';
+            }).join('')
+          + '</div>'
+        : '';
+      return '<div class="wp-fs' + (UI.fsOpen ? ' open' : '') + (active === 'formula' ? ' is-formula' : '') + '">'
+        + '<button type="button" class="wp-fs-btn" data-action="fs-toggle" title="' + esc(selGroup.title) + '"'
+        + ' aria-expanded="' + (UI.fsOpen ? 'true' : 'false') + '">'
+        + '<span class="wp-fs-label">' + esc(selGroup.label) + '</span>'
+        + '<span class="wp-fs-caret" aria-hidden="true">▾</span></button>'
+        + menu
+        + '</div>';
+    }
+
     return '<aside class="work-panel" id="work-panel" aria-label="会话产物工作台">'
       + '<div class="wp-tabs" role="tablist">'
-      + tabs.map(function (t) {
-          return '<button type="button" role="tab" aria-selected="' + (t.id === active) + '"'
+      + tabs.map(function (t, idx) {
+          /* v3.68：检索结果（会话级）与产物组之间加竖分割线；
+             v3.70：分割线后即配方切换控件（所有产物 tab 之前，检索结果不算） */
+          return (idx === 1 ? '<span class="wp-sep" aria-hidden="true"></span>' + fsHTML() : '')
+            + '<button type="button" role="tab" aria-selected="' + (t.id === active) + '"'
             + ' class="wp-tab' + (t.id === active ? ' active' : '') + '"'
             + ' data-action="panel-tab" data-tab="' + t.id + '">'
             + esc(t.label) + (t.badge ? '<span class="wp-n">' + t.badge + '</span>' : '') + '</button>';
@@ -1518,31 +1702,44 @@
     var n = list.length;
     var cur = list[cc.idx % n];
     var isF = cc.kind === 'formula';
+    /* v3.61（黄总 2026-11-18）：确认卡撤解读 note——定位是「快速浏览必要信息 + 确定性选择」，
+     * 解读类文字（形成焓最优/取向最优…）不上卡，由对话区 AI 承载；配方/工艺两分支同撤。
+     * mock note 字段保留：cc-create 创建科研对象时写入 design_note（L3730 附近）。
+     * v3.62（黄总 2026-11-18）：工艺分支摘要同步收敛——11 项参数整串平铺违背「快速浏览」，
+     * 收成热处理窗口一行（烧结 温度×时间 · 退火 温度×时间），完整 11 项在工作台工艺 tab。 */
+    function pickStepV(p, k) { var s = p.steps.filter(function (x) { return x[0] === k; })[0]; return s ? s[1] : ''; }
+    /* v3.75（黄总 2026-11-18 午）：摘要行撤「推荐 / 预测 predicted」标签——推荐倾向与口径
+     * 对话区 AI 已表述，卡片只留 id + 关键数字；工艺评分挪到名称后（.cc-score），
+     * meta 行只余热处理窗口。 */
     var summary = isF
       ? '<div class="cc-id mono b">' + esc(cur.id) + '</div>'
-        + (cur.pick ? tag('pass', '推荐') : '') + truthFlagHTML('predicted')
         + '<span class="cc-meta mono">成本 ' + esc(cur.cost) + ' · Hcj ' + cur.pred.Hcj + ' kOe · Br ' + cur.pred.Br + ' kGs · (BH)max ' + cur.pred.BHmax + ' MGOe</span>'
-        + '<div class="cc-note">' + esc(cur.note) + '</div>'
       : '<div class="cc-id mono b">' + esc(cur.id) + '</div>'
-        + (cur.pick ? tag('pass', '推荐') : '') + truthFlagHTML('predicted')
-        + '<span class="cc-meta mono">评分 ' + cur.score + ' · ' + cur.steps.map(function (s) { return s[0] + ' ' + s[1]; }).join(' → ') + '</span>'
-        + '<div class="cc-note">' + esc(cur.note) + '</div>';
+        + '<span class="cc-score">评分 <b class="mono">' + cur.score + '</b></span>'
+        + '<span class="cc-meta mono">烧结 ' + esc(pickStepV(cur, '烧结温度')) + ' × ' + esc(pickStepV(cur, '烧结时间'))
+        + ' · 退火 ' + esc(pickStepV(cur, '退火温度')) + ' × ' + esc(pickStepV(cur, '退火时间')) + '</span>';
     var pager = n > 1
       ? '<div class="cc-pager">'
         + '<button type="button" class="cc-nav" data-action="cc-nav" data-dir="-1" aria-label="上一个候选">‹</button>'
         + '<span class="cc-n mono">' + (cc.idx + 1) + '/' + n + '</span>'
         + '<button type="button" class="cc-nav" data-action="cc-nav" data-dir="1" aria-label="下一个候选">›</button></div>'
       : '';
-    /* 候选已存在科研对象 → 主按钮前置置灰（不重复创建），提示用户走「存到当前样品」 */
+    /* v3.67（黄总 2026-11-18 午）：工艺包不给出「创建为新对象」——全平台以配方为主 key 组织，
+     * 工艺是配方的下游产物、不能独立成科研对象（同 v3.20 方案档收敛、v3.64 产物树归组原则）；
+     * 工艺确认卡去向只剩 忽略 / 存到当前样品。配方候选本身是主 key 对象，保留创建入口。
+     * v3.76（黄总 2026-11-18 午）：候选已存在科研对象时不再渲染置灰的「已在科研对象」——
+     * 不可点的占位按钮是噪音；此时只剩 忽略 / 存到当前样品（与工艺卡按钮组形态一致）。 */
     var exists = !!findSample(cur.id);
-    var createBtn = exists
-      ? '<button type="button" class="cc-btn primary" disabled title="该对象已存在于科研对象">已在科研对象</button>'
+    var createBtn = (!isF || exists) ? ''
       : '<button type="button" class="cc-btn primary" data-action="cc-create">' + icon('plus', 12) + ' 创建为新对象</button>';
+    /* v3.69（黄总 2026-11-18 午）：标题下置——「候选配方/工艺参数包 待确认」并入底部控件行，
+     * 取代「确认这组…的去向」引导语；卡片顶部直接展示候选摘要，不再设卡头行。
+     * v3.72（黄总 2026-11-18 午）：翻页器移卡片右上角（绝对定位浮于摘要区右上），
+     * 底行只剩 标题 + 按钮组。 */
     return '<div class="ccard" role="region" aria-label="产物确认卡"><div class="ccard-in">'
-      + '<div class="cc-head">' + icon(isF ? 'flask' : 'loop', 13)
-      + '<span class="cc-title">' + (isF ? '候选配方待确认' : '工艺参数包待确认') + '</span>' + pager + '</div>'
+      + pager
       + '<div class="cc-body">' + summary + '</div>'
-      + '<div class="cc-foot"><span class="cc-ask">确认这组' + (isF ? '配方' : '工艺包') + '的去向</span>'
+      + '<div class="cc-foot"><span class="cc-ask">' + (isF ? '候选配方待确认' : '工艺参数包待确认') + '</span>'
       + '<div class="cc-ops">'
       + '<button type="button" class="cc-btn ghost" data-action="cc-dismiss">忽略</button>'
       + '<button type="button" class="cc-btn" data-action="cc-save-current">存到当前样品</button>'
@@ -1716,6 +1913,7 @@
 
   /* v3.28（黄总 2026-11-17）：工作台宽度可拖拽，带固定极限——
    * 工作台 ≥ 360px、对话流 ≥ 520px（分隔条 6px 从内容宽度中扣除）；
+   * v3.70：侧边文件树撤下（曾短暂提升到 470px），下限回 360px；
    * 拖过的值写 localStorage，刷新保留；视口变化时按新宽度重新夹逼。 */
   var SPLIT_W = 6, PANEL_MIN = 360, FLOW_MIN = 520;
   function panelBounds(containerW) {
@@ -1791,23 +1989,46 @@
     });
     return rounds;
   }
+  /* v3.74（黄总 2026-11-18）：演示也要「先整体发出用户消息 → AI 逐字打出回答」，不再整片糊上。
+   * user 整句立现（先渲染一次）；plan 过程卡保持完成态直接显示（结构卡，不打字）；
+   * 本轮 answer 注入为未流式（_streamed=false），boot 后由 playStreamQueue 串行逐字播放。 */
   function advanceDemo() {
     var rounds = demoRounds();
     if (!rounds.length) { toast('演示脚本暂不可用'); return; }
     if (UI.demoStep >= rounds.length) { toast('演示已完成 · 可新建对话重播'); return; }
     var round = rounds[UI.demoStep++];
+    var userMsg = null, aiMsgs = [];
     round.forEach(function (m) {
       /* 深拷贝，避免演示注入污染固化会话静态数据 */
-      UI.msgs.push(JSON.parse(JSON.stringify(m)));
+      var c = JSON.parse(JSON.stringify(m));
+      if (c.role === 'user') { userMsg = c; } else { aiMsgs.push(c); }
     });
-    /* 切到本轮主产物 tab，让配方/工艺/仿真结果可见 */
-    var mainTask = null;
-    round.forEach(function (m) { if (m.task && !mainTask) { mainTask = m.task; } });
-    if (mainTask) { UI.panelTab = mainTabFor(mainTask.intent); }
-    persistChat();
-    UI._scrollEnd = true;
-    boot('index');
-    toast('演示 ' + UI.demoStep + '/' + rounds.length + ' · ' + round[0].text);
+    if (userMsg) {
+      UI.msgs.push(userMsg);
+      persistChat();
+      UI._scrollEnd = true;
+      boot('index');   /* 用户消息先整体出现 */
+    }
+    window.setTimeout(function () {
+      aiMsgs.forEach(function (c) {
+        if (c.kind === 'answer') { c._streamed = false; }   /* 待流式：先渲染空壳 */
+        UI.msgs.push(c);
+      });
+      /* 切到本轮主产物 tab，让配方/工艺/仿真结果可见 */
+      var mainTask = null;
+      aiMsgs.forEach(function (m) { if (m.task && !mainTask) { mainTask = m.task; } });
+      if (mainTask) { UI.panelTab = mainTabFor(mainTask.intent); }
+      /* v3.62：演示轮注入的配方/工艺产物同样上确认卡——boot 的恢复块只在首启跑一次，
+         这里必须显式 seed，否则演示态确定性引导缺失 */
+      seedConfirmCard();
+      persistChat();
+      UI._scrollEnd = true;
+      boot('index');
+      var idxs = [];
+      UI.msgs.forEach(function (m, i) { if (m.kind === 'answer' && !m._streamed) { idxs.push(i); } });
+      playStreamQueue(idxs);   /* AI 回答逐字打出 */
+      toast('演示 ' + UI.demoStep + '/' + rounds.length + ' · ' + (userMsg ? userMsg.text : ''));
+    }, 340);
   }
   function submitTaskText(text) {
     text = String(text || '').trim();
@@ -1928,13 +2149,14 @@
     }
   }
 
-  /* 回答文本流式：直接操作 DOM（不走整页重绘），完成后追加产物卡（v3.9b 起无回执卡） */
-  function startStream(mi) {
+  /* 回答文本流式：直接操作 DOM（不走整页重绘），完成后追加产物卡（v3.9b 起无回执卡）
+   * v3.74：加可选 onDone 回调——演示脚本一轮多条 answer 时串行逐条播放（playStreamQueue）。 */
+  function startStream(mi, onDone) {
     var msg = UI.msgs[mi];
-    if (!msg || msg.kind !== 'answer') { return; }
+    if (!msg || msg.kind !== 'answer') { if (onDone) { onDone(); } return; }
     var plain = (msg.task && msg.task.answer) || '';
     var el = document.querySelector('[data-answer-mi="' + mi + '"] .ans-text');
-    if (!el || !plain) { finalizeAnswer(msg); return; }
+    if (!el || !plain) { finalizeAnswer(msg); if (onDone) { onDone(); } return; }
     var i = 0;
     window.clearInterval(UI._streamTimer);
     UI._streamTimer = window.setInterval(function () {
@@ -1945,8 +2167,16 @@
       if (i >= plain.length) {
         window.clearInterval(UI._streamTimer);
         finalizeAnswer(msg);
+        if (onDone) { onDone(); }
       }
     }, 26);
+  }
+  /* 串行流式播放多条 AI 回答：演示脚本一轮可含多条 answer（综合解读 + 各仿真补充），
+     一条打完再打下一条，避免整片糊上。 */
+  function playStreamQueue(mis) {
+    if (!mis.length) { return; }
+    var mi = mis.shift();
+    startStream(mi, function () { playStreamQueue(mis); });
   }
   function finalizeAnswer(msg) {
     if (msg._streamed) { return; }
@@ -3449,6 +3679,9 @@
     simView: {},                   /* 仿真版本查看：{engine: eid}，用户在运行历史里点选的历史版 */
     renames: {},                   /* 样品重命名表（boot 时从 localStorage 读入） */
     panelW: 0,                     /* 工作台宽度（v3.28：用户拖拽后存 px，0 = 默认等宽） */
+    fsOpen: false,                 /* 配方切换控件展开态（v3.70，会话内状态） */
+    fsSel: '',                     /* 选中的配方组 key（v3.70，'' = 默认最新一组） */
+    candSel: null,                 /* 候选显式选用 {formula: id, process: id}（v3.74，null = 默认 AI 推荐） */
     confirmCard: null,             /* v3.52 确定性确认卡：{kind:'formula'|'process', idx, done} */
     demoStep: 0,                   /* v3.38：空点发送逐轮吐预置脚本的进度（0..N；手动输入后置 -1 退出演示） */
     _init: false, _qSeeded: false, _scrollEnd: false, _planTimer: null, _streamTimer: null, _pendingSeed: '', _draft: ''
@@ -3702,10 +3935,11 @@
         break;
       }
       case 'cc-create': {
-        /* v3.52：把当前候选创建为新科研对象——新增样品对象（待制样、数据待补） */
+        /* v3.52：把当前候选创建为新科研对象——新增样品对象（待制样、数据待补）；
+           v3.67：仅配方候选可创建（以配方为主 key）；工艺包是下游产物，防御性拦截 */
         e.preventDefault();
         var ccC = UI.confirmCard;
-        if (!ccC) { break; }
+        if (!ccC || ccC.kind !== 'formula') { break; }
         var src = (ccC.kind === 'formula' ? M.candidates : M.processPacks)[ccC.idx];
         var nid = src.id;
         if (!findSample(nid)) {
@@ -3806,9 +4040,50 @@
         /* v3.3 右栏 tab 切换：只局部重渲染面板，不动对话流与输入框 */
         e.preventDefault();
         UI.panelTab = el.getAttribute('data-tab') || 'status';
+        UI.fsOpen = false;  /* v3.71：切 tab 收起配方下拉 */
         var wp = $('work-panel');
         if (wp) { wp.outerHTML = panelHTML(); }
         break;
+      /* v3.70 配方切换控件：点击展开 / 收起配方列表（tab 条下方第二行）；
+         选中某配方后产物 tab 只显示该组产物，当前 tab 不在组内时自动落回检索结果 */
+      /* v3.71：fs-toggle 展开的是控件自身下拉菜单（.wp-fs-menu fixed 浮层）——
+         wp-tabs 的 overflow-x:auto 会裁剪 absolute 子元素，fixed 不受裁剪，
+         渲染后按按钮实际位置定位到其正下方 */
+      case 'fs-toggle':
+        e.preventDefault();
+        UI.fsOpen = !UI.fsOpen;
+        var wpT = $('work-panel');
+        if (wpT) { wpT.outerHTML = panelHTML(); }
+        if (UI.fsOpen) {
+          var fsBtn = document.querySelector('.wp-fs-btn');
+          var fsMenu = document.querySelector('.wp-fs-menu');
+          if (fsBtn && fsMenu) {
+            var fr = fsBtn.getBoundingClientRect();
+            fsMenu.style.left = Math.round(fr.left) + 'px';
+            fsMenu.style.top = Math.round(fr.bottom + 6) + 'px';
+            fsMenu.style.width = Math.round(fr.width) + 'px';  /* v3.73：菜单与胶囊齐宽 */
+          }
+        }
+        break;
+      case 'fs-pick':
+        e.preventDefault();
+        UI.fsSel = el.getAttribute('data-key') || '';
+        UI.fsOpen = false;
+        var wpS = $('work-panel');
+        if (wpS) { wpS.outerHTML = panelHTML(); }
+        break;
+      /* v3.74 候选卡「选用」：显式选定配方 / 工艺包（默认 AI 推荐），toast 反馈 */
+      case 'cand-pick': {
+        e.preventDefault();
+        var cpKind = el.getAttribute('data-kind') || 'formula';
+        var cpId = el.getAttribute('data-id') || '';
+        UI.candSel = UI.candSel || {};
+        UI.candSel[cpKind] = cpId;
+        toast('已选用 ' + cpId + (cpKind === 'formula' ? ' · 后续仿真 / 工艺将基于该候选' : ' · 执行排产基于该工艺包'));
+        var wpC = $('work-panel');
+        if (wpC) { wpC.outerHTML = panelHTML(); }
+        break;
+      }
       /* ---- 科学工具（D-52）：「添加」展开来源菜单；上传文件 = 按当前 tab 模拟加卡；
          从端砚平台导入 = 接口占位（黄总后续对接平台工具库） ---- */
       case 'pl-import': {

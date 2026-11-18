@@ -1030,6 +1030,9 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
   overflow-x: auto; scrollbar-width: none;
 }
 .wp-tabs::-webkit-scrollbar { display: none; }
+/* v3.68（黄总 2026-11-18）：检索结果 tab 与右侧产物 tab 的分组竖线——
+ * 检索是会话级、产物 tab 才入文件树，视觉上分成两组 */
+.wp-sep { flex: none; width: 1px; background: var(--border); margin: 8px 5px; }
 .wp-tab {
   flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   min-width: 72px; padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--muted-fg);
@@ -1045,6 +1048,41 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
 }
 .wp-tab.active .wp-n { background: var(--info-bg); color: var(--primary); }
 .wp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px; }
+/* v3.73（黄总 2026-11-18）：控件改圆形胶囊（更有控件感）、撤 icon；下拉菜单与胶囊齐宽。
+ * 控件与右侧配方 tab 之间无分隔线，配方 tab 激活时胶囊同步主色——营造一体感。 */
+.wp-fs { display: inline-flex; align-items: center; position: relative; align-self: center; padding: 0 2px 0 6px; }
+.wp-fs-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 13px; font-family: var(--sans); font-size: 12px; font-weight: 700;
+  color: var(--foreground); background: var(--card);
+  border: 1px solid var(--border); border-radius: 999px; cursor: pointer; white-space: nowrap;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.wp-fs-btn:hover { color: var(--primary); border-color: var(--primary); }
+.wp-fs-label { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.wp-fs-caret { flex: none; font-size: 9px; color: var(--muted-fg); transition: transform .15s ease; }
+.wp-fs.open .wp-fs-caret { transform: rotate(180deg); }
+.wp-fs.open .wp-fs-btn, .wp-fs.is-formula .wp-fs-btn {
+  color: var(--primary); border-color: var(--primary); background: var(--info-bg);
+}
+/* 下拉菜单：fixed 浮层（JS 按胶囊位置定位且与胶囊齐宽），白卡 + 边框 + 阴影 */
+.wp-fs-menu {
+  position: fixed; z-index: 40; display: flex; flex-direction: column; gap: 2px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .12); padding: 5px;
+}
+.wp-fs-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 5px;
+  width: 100%; padding: 6px 8px; border: none; background: none; border-radius: 7px;
+  font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--foreground);
+  cursor: pointer; text-align: left;
+}
+.wp-fs-item:hover { background: var(--muted); }
+.wp-fs-item.on { color: var(--primary); background: var(--info-bg); }
+.wp-fs-it { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wp-fs-n { flex: none; font-size: 9px; font-weight: 700; color: var(--muted-fg); }
+@keyframes simFlashKf { from { box-shadow: 0 0 0 2px var(--primary); } to { box-shadow: 0 0 0 2px transparent; } }
+.wp-sim.sim-flash { animation: simFlashKf 1.5s ease; }
 /* v3.59（黄总 2026-11-18 早）：.savebar/.sb-* 提示条样式已随功能一并删除——
  * 存样品引导由确定性确认卡（.ccard，grid-area: save）独占承载 */
 /* v3.48 确定性确认卡（黄总 2026-11-17 晚）：宽度复刻输入盒（同列 chat-col 约束），
@@ -1055,14 +1093,13 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
 /* v3.52（黄总 2026-11-18）：卡片视觉宽度复刻输入框——外层透明不占满列宽，
    白卡片样式（边框 + 圆角 + 阴影）在内层，max-width 与 chat-col 内容宽一致（812px） */
 .ccard-in {
-  max-width: 812px; margin: 0 auto;
+  max-width: 812px; margin: 0 auto; position: relative;
   background: var(--card); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: var(--shadow); padding: 10px 14px 10px;
 }
-.cc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.cc-head svg { color: var(--primary); flex: none; }
-.cc-title { font-size: 11.5px; font-weight: 700; color: var(--muted-fg); }
-.cc-pager { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+/* v3.69：卡头行取消——标题下置底行（复用 .cc-ask 弱样式）；
+ * v3.72：翻页器浮于卡片右上角，摘要区右留 84px 防重叠 */
+.cc-pager { position: absolute; top: 10px; right: 14px; display: inline-flex; align-items: center; gap: 6px; }
 .cc-nav {
   width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
   font-size: 14px; line-height: 1; color: var(--muted-fg);
@@ -1071,10 +1108,12 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
 }
 .cc-nav:hover { color: var(--primary); border-color: var(--primary); }
 .cc-n { font-size: 10.5px; font-weight: 700; color: var(--muted-fg); min-width: 26px; text-align: center; }
-.cc-body { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.cc-body { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-right: 84px; }
 .cc-id { font-size: 13px; font-weight: 700; color: var(--foreground); }
+/* v3.75：确认卡评分跟在名称后（替代摘要行首与标签） */
+.cc-score { font-size: 11px; color: var(--muted-fg); }
+.cc-score b { color: var(--primary); font-size: 12.5px; }
 .cc-meta { flex-basis: 100%; font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
-.cc-note { flex-basis: 100%; font-size: 11.5px; color: var(--foreground); line-height: 1.6; }
 .cc-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
 .cc-ask { font-size: 11.5px; color: var(--muted-fg); }
 .cc-ops { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
@@ -1231,9 +1270,11 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
 .sub-flag.sf-orchestrate { color: #7C3AED; background: #F5F0FF; border-color: #E4D9FB; }
 
 /* ---------- 回答气泡（流式文本） ---------- */
+/* v3.63（黄总 2026-11-18）：AI 常规回答去气泡化——不再套卡片壳，直接平铺纯文本；
+   用户消息仍在气泡内、plan 过程卡不动。内嵌可视化（cmp-block / grain-bar）自带边框背景，
+   去掉外层气泡后仍保有自身边界。 */
 .ans-bubble {
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 12px 16px;
+  background: none; border: none; border-radius: 0; box-shadow: none; padding: 2px 0;
 }
 .ans-text { font-size: 13.5px; line-height: 1.75; color: var(--foreground); }
 .ans-text b { color: var(--primary); }
@@ -1266,6 +1307,17 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
   background: #FCFDFF; padding: 10px 11px; margin-bottom: 9px;
 }
 .cand-item.is-pick { border-color: var(--pass-bd); background: var(--pass-bg); }
+/* v3.74（黄总 2026-11-18）：候选卡「选用」按钮——每张候选可显式选定（默认 AI 推荐项）；
+ * 选中卡主色描边，按钮变实底「已选用」并禁用（改选点其他卡按钮） */
+.cand-item.is-picked { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+.cand-pick-btn {
+  flex: none; margin-left: 8px; padding: 3px 12px;
+  font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--primary);
+  background: var(--card); border: 1px solid var(--primary); border-radius: 999px; cursor: pointer;
+  transition: color .15s ease, background .15s ease;
+}
+.cand-pick-btn:hover { background: var(--info-bg); }
+.cand-pick-btn.on { color: #fff; background: var(--primary); border-color: var(--primary); cursor: default; }
 .cand-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .cand-id { font-size: 13px; font-weight: 700; color: var(--foreground); }
 .cand-score { margin-left: auto; font-size: 10.5px; color: var(--muted-fg); }
