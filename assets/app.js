@@ -1,6 +1,12 @@
 /* =============================================================================
- * 稀土材料科学平台 · 静态 Demo · 全站交互（v3.77）
+ * 稀土材料科学平台 · 静态 Demo · 全站交互（v3.78）
  * -----------------------------------------------------------------------------
+ * v3.78（黄总 2026-11-18 午）：输入框卡片对齐对话流内容宽——宽屏下对话流内容（chat-col）max-width
+ *   860，而 composer .chat-col 自带 24px 左右 padding 使 cmdbox 只有 812（窄 48px）。把左右 padding
+ *   从 chat-col 挪到 .composer 容器层（与 .chat-flow 的 24px 一致），cmdbox 宽屏达 860 与对话流对齐；
+ *   确认卡 .ccard-in 同步 812→860 保持一致；hero 空态 padding 归零不参与。版本号全站统一 v3.78。
+ *   （顺手修复：mock-data.js 的 processStages 数组 9 处对象间缺逗号致整页语法错误打不开，已补。）
+ *
  * v3.77（黄总 2026-11-18 午）：配方 / 工艺候选卡加「选用」按钮——每张候选可显式选定
  *   （candSelId：UI.candSel 显式选用 > AI 推荐项 pick 兜底），选中卡主色描边
  *   （.cand-item.is-picked）+ 按钮实底「已选用」并禁用，改选点其他卡按钮；
@@ -830,7 +836,7 @@
       + '<span class="sb-avatar" aria-hidden="true">' + esc(M.account.initial) + '</span>'
       + '<span class="sb-acc-name">' + esc(M.account.name) + '</span>'
       + '</div>'
-      + '<div class="sb-ver">静态演示 Demo v3.77</div>'
+      + '<div class="sb-ver">静态演示 Demo v3.78</div>'
       + '</div></aside>';
     var chrome = $('app-chrome');
     if (chrome) { chrome.innerHTML = html; }
@@ -4148,18 +4154,18 @@
         M.samples.forEach(function (s) { if (s.sample_id === 'SMP-002') { smpP = s; } });
         if (smpP) {
           smpP.process.forEach(function (pr) {
-            if (pr.n === 6) {
+            if (pr.n === 5) {
               pr.state = 'done'; delete pr.warn;
               pr.param = 'N₂ · 0.6 MPa · D50 = 4.2 μm · 氧 2980 ppm（复测）';
               if (pr.kv) { pr.kv = [['工作气体', 'N₂'], ['气体压力', '0.6 MPa'], ['粒径分布 D10/D50/D90', 'D50 = 4.2 μm'], ['氧含量', '2980 ppm']]; }
             }
-            if (pr.n === 7) { pr.state = 'current'; pr.param = '取向 1.8 T · 成型 Φ40×25 mm（进行中）'; }
+            if (pr.n === 6) { pr.state = 'current'; pr.param = '3 批次称重复核一致（进行中）'; }
           });
           smpP.stage = '工艺执行中';
         }
-        toast('已复核放行：SMP-002 进入工序 7（磁场取向和压制）——静态演示内存态，刷新还原');
+        toast('已复核放行：SMP-002 进入工序 6（混料）——静态演示内存态，刷新还原');
         /* pushState 换 URL 不重载页面（保内存态），重渲染到工序 7 看样品继续流转 */
-        window.history.pushState({}, '', url('lab.html', { stage: 7 }));
+        window.history.pushState({}, '', url('lab.html', { stage: 6 }));
         initLab();
         break;
       }
@@ -4169,7 +4175,7 @@
         M.samples.forEach(function (s) { if (s.sample_id === 'SMP-002') { smpR = s; } });
         if (smpR) {
           smpR.process.forEach(function (pr) {
-            if (pr.n === 6) { pr.state = 'done'; delete pr.warn; }
+            if (pr.n === 5) { pr.state = 'done'; delete pr.warn; }
           });
           smpR.stage = '异常驳回 · 已终止';
         }

@@ -589,8 +589,10 @@ a.sb-brand:hover { text-decoration: none; color: var(--primary); }
   padding: 26px 24px 18px; gap: 14px;
 }
 /* v3.60（黄总 2026-11-18）：输入条去底色/模糊/顶部分隔线——透明，直接露出页面底色 */
-.composer { flex: none; }
-.composer .chat-col { padding: 12px 24px 14px; }
+/* v3.78（黄总 2026-11-18）：输入框卡片对齐对话流内容宽——左右 padding 从 chat-col 挪到
+   .composer 容器层（与 .chat-flow 的 24px 一致），宽屏下 cmdbox 不再比对话流内容窄 48px */
+.composer { flex: none; padding: 0 24px; }
+.composer .chat-col { padding: 12px 0 14px; }
 
 /* ---------- 输入盒（v3.5）：多行输入区 + 盒内工具行（样品 / 技能选择器居左，发送居右） ---------- */
 .cmdbox {
@@ -689,7 +691,7 @@ a.sb-brand:hover { text-decoration: none; color: var(--primary); }
 /* v3.52：工具行挂载 chips 已撤下（块即上下文，挂在输入框里）；.at-chips/.at-chip 样式移除 */
 
 /* 空态输入盒（is-hero）：放大为视觉主角；会话态（is-dock）维持吸底样式 */
-.composer.is-hero { border-top: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; width: 100%; margin-top: 26px; }
+.composer.is-hero { border-top: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; width: 100%; margin-top: 26px; padding: 0; }
 .composer.is-hero .chat-col { padding: 0; max-width: 720px; }
 .composer.is-hero .cmdbox {
   padding: 16px 18px 13px; border-radius: 14px;
@@ -1091,9 +1093,10 @@ body.is-resizing-panel, body.is-resizing-panel * { cursor: col-resize !important
   grid-area: save; padding: 0 24px 10px;
 }
 /* v3.52（黄总 2026-11-18）：卡片视觉宽度复刻输入框——外层透明不占满列宽，
-   白卡片样式（边框 + 圆角 + 阴影）在内层，max-width 与 chat-col 内容宽一致（812px） */
+   白卡片样式（边框 + 圆角 + 阴影）在内层，max-width 与 chat-col 内容宽一致；
+   v3.78 起对话流/输入框统一 860，确认卡同步 860 */
 .ccard-in {
-  max-width: 812px; margin: 0 auto; position: relative;
+  max-width: 860px; margin: 0 auto; position: relative;
   background: var(--card); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: var(--shadow); padding: 10px 14px 10px;
 }
