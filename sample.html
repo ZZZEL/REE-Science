@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280">
+  <meta name="color-scheme" content="light">
+  <title>科研对象 · 稀土材料科学平台（静态演示 Demo v3.60）</title>
+  <link rel="stylesheet" href="assets/style.css?v=3.60">
+</head>
+<body data-page="sample">
+  <div class="app-shell">
+    <!-- v3.21（黄总 2026-11-16）：仿真任务卡改左右分栏——左栏结论/输入参数/输出产物/任务信息，
+         右栏运行脚本专区；<1200px 回落上下堆叠。
+         v3.19（黄总 2026-11-16）：仿真数据 tab 的脚本升级为「运行脚本」专区——
+         顶栏（文件名 + 引擎 tag + 行数 + 复制脚本）/ 行号 + 语法高亮代码体（限高滚动）/
+         底部集群运行命令行，常显不再折叠；mumax3 .mx3 与 VASP INCAR 同一模板。
+         v3.13（黄总 2026-11-13/14）：科研对象 = 两层结构。
+         无 sample_id → 样品总览预览页：全部样品卡片网格（进度/性能/数据完备度/留痕计数），
+         头部操作区 = 阶段筛选 + 搜索 + 新建样品（用户样品可删，二次确认）；
+         带 sample_id → 详情页：单栏全宽（v3.13 起台账侧栏已删，换样回总览），头部带「← 样品总览」——
+         样品数据（配方+制备流程）/ 实验数据（电镜+性能+本征，measured）/
+         仿真数据（VASP+mumax3 任务卡，simulated）/ 留痕。
+         ?tab=base|exp|sim|trace 深链（旧 intr|perf 归并入 exp）。 -->
+    <div id="app-chrome"></div>
+    <main id="page-root"></main>
+  </div>
+  <div id="overlays"></div>
+  <noscript><div style="padding:24px;font-family:sans-serif;color:#B91C1C">本 Demo 需要启用 JavaScript 才能渲染界面（纯静态、无网络请求）。</div></noscript>
+
+  <!-- 传统脚本（非 ES module），保证 file:// 双击可运行；mock-data.js 必须先于 app.js -->
+  <script src="assets/mock-data.js?v=3.60"></script>
+  <script src="assets/app.js?v=3.60"></script>
+</body>
+</html>

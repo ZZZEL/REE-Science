@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280">
+  <meta name="color-scheme" content="light">
+  <title>已升级为对话主页（兼容跳转） · 稀土材料科学平台（静态演示 Demo v3.60）</title>
+  <link rel="stylesheet" href="assets/style.css?v=3.60">
+</head>
+<body>
+  <!-- v3.0（D-38）：v1.x–v2.0 的独立功能页（任务台 / 批次 360 / 建议单 / 治理 / 假设验证）
+       全部收编进「整页对话 + 科研对象」两视图。本页仅作兼容重定向壳：
+       透传 q / sample_id / focus / c 到 index.html，旧书签 / 旧外链不断。
+       纯内联脚本、无 fetch、无外部依赖；noscript 兜底。 -->
+  <div style="max-width:720px;margin:60px auto;padding:0 24px;font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:#1E3A8A">
+    <h1 style="font-size:20px">该页面已收编进「对话主页」</h1>
+    <p style="font-size:14px;color:#475569">v3.0 起平台只有两个视图：整页对话（主入口）与科研对象。正在为你跳转…若浏览器未自动跳转，请点击下方链接。</p>
+    <p><a id="fallback-link" href="index.html" style="color:#1E40AF">进入对话主页 →</a></p>
+  </div>
+  <noscript>
+    <div style="max-width:720px;margin:12px auto;padding:0 24px;font-family:sans-serif;font-size:13px;color:#B91C1C">
+      未启用 JavaScript，无法自动映射旧参数，请直接打开 <a href="index.html">index.html</a>。
+    </div>
+  </noscript>
+  <script>
+  (function () {
+    'use strict';
+    function getParam(k) {
+      try {
+        var v = new URLSearchParams(window.location.search).get(k);
+        return (v === null || v === '') ? '' : v;
+      } catch (e) { return ''; }
+    }
+    var parts = [];
+    ['q', 'sample_id', 'focus', 'c'].forEach(function (k) {
+      var v = getParam(k);
+      if (v) { parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v)); }
+    });
+    /* 旧参数中的样品相关提问统一进 ?q= 会话流；其余参数一律丢弃（v3.0 无对应视图） */
+    var target = 'index.html' + (parts.length ? '?' + parts.join('&') : '');
+    var a = document.getElementById('fallback-link');
+    if (a) { a.setAttribute('href', target); }
+    window.location.replace(target);
+  })();
+  </script>
+</body>
+</html>
